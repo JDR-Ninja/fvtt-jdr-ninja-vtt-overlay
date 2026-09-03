@@ -1,0 +1,79 @@
+# Builds and publishes the module whenever a `v*` tag appears.
+#
+# Creating the tag on GitHub is enough: Releases > Draft a new release > Create new tag on
+# publish. The tag is the source of truth for the version, so CI stamps it into module.json
+# before checking and building. No local version bump or commit is required to ship, and the
+# `download` URL attached to the release always points at that release's own zip.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  # Re-run a release for a tag that already exists, without deleting and recreating it.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to rebuild, e.g. v1.0.1"
+        required: true
+
+permissions:
+  contents: write
+
+# One release at a time per tag: a re-run must not race the assets of the run it repeats.
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve the version from the tag
+        id: version
+        # Through the environment, not `${{ }}` inside the script: a tag name is attacker
+        # chosen text as far as this shell is concerned. Everything downstream reads the
+        # outputs below, which are semver-validated here.
+        env:
+          RAW_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          TAG="$RAW_TAG"
+          VERSION="${TAG#v}"
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::tag \"$TAG\" is not v<major>.<minor>.<patch>, e.g. v1.0.1"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.version.outputs.tag }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Before check and build: the build stages module.json into dist/, so this reaches both
+      # the standalone manifest asset and the copy inside module.zip.
+      - name: Stamp the tag version into module.json
+        run: node tools/stamp.mjs "${{ steps.version.outputs.version }}"
+
+      - name: Check manifest and localization consistency
+        run: npm run check
+
+      - run: npm run build
+
+      - name: Publish the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Explicit: on a workflow_dispatch re-run the ref is a branch, not the tag.
+          tag_name: ${{ steps.version.outputs.tag }}
+          # Attaching an empty release would look like a successful publish to Foundry users.
+          fail_on_unmatched_files: true
+          files: |
+            module.json
+            module.zip

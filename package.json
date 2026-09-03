@@ -1,0 +1,17 @@
+{
+  "name": "jdr-ninja-vtt-overlay",
+  "private": true,
+  "type": "module",
+  "description": "Build tooling for the JDR Ninja VTT Overlay Foundry VTT module.",
+  "license": "MIT",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "watch": "node tools/build.mjs --watch",
+    "release": "node tools/release.mjs",
+    "check": "node tools/check.mjs"
+  },
+  "devDependencies": {
+    "archiver": "^7.0.1",
+    "esbuild": "^0.25.0"
+  }
+}

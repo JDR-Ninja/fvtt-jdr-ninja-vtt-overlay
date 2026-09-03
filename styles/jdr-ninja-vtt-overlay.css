@@ -1,0 +1,227 @@
+/* JDR Ninja VTT Overlay settings panel styles. Scoped under the app class. */
+
+.jdr-ninja-vtt-overlay .jdrn-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.5rem 0.25rem;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-section {
+  border: 1px solid var(--color-border-light-tertiary, rgba(0, 0, 0, 0.2));
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem 0.75rem;
+  margin: 0;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-section > legend {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  padding: 0 0.35rem;
+  opacity: 0.85;
+}
+
+/* Connection status */
+.jdr-ninja-vtt-overlay .jdrn-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-badge {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-status-connected .jdrn-badge { background: #2e7d32; }
+.jdr-ninja-vtt-overlay .jdrn-status-disconnected .jdrn-badge { background: #8a8a8a; }
+
+.jdr-ninja-vtt-overlay .jdrn-account { font-weight: 600; }
+
+.jdr-ninja-vtt-overlay .jdrn-device { margin: 0.2rem 0 0.6rem; font-size: 0.85rem; }
+.jdr-ninja-vtt-overlay .jdrn-muted { opacity: 0.7; font-size: 0.8rem; }
+
+/* Actions / buttons */
+.jdr-ninja-vtt-overlay .jdrn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-btn[disabled] {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-btn-primary {
+  background: #7b1fa2;
+  border-color: #7b1fa2;
+  color: #fff;
+}
+
+/* Paid notice */
+.jdr-ninja-vtt-overlay .jdrn-notice {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-notice-paid {
+  background: rgba(123, 31, 162, 0.12);
+  border: 1px solid rgba(123, 31, 162, 0.45);
+}
+
+.jdr-ninja-vtt-overlay .jdrn-notice p { margin: 0 0 0.35rem; }
+
+.jdr-ninja-vtt-overlay .jdrn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #7b1fa2;
+  text-decoration: underline;
+  cursor: pointer;
+  width: auto;
+}
+
+/* Checklist */
+.jdr-ninja-vtt-overlay .jdrn-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-check {
+  display: grid;
+  grid-template-columns: 1.2rem auto;
+  grid-template-areas:
+    "icon label"
+    "icon message";
+  column-gap: 0.5rem;
+  align-items: start;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-check > i { grid-area: icon; margin-top: 0.15rem; }
+.jdr-ninja-vtt-overlay .jdrn-check-label { grid-area: label; font-weight: 600; }
+.jdr-ninja-vtt-overlay .jdrn-check-message { grid-area: message; font-size: 0.8rem; opacity: 0.85; }
+
+.jdr-ninja-vtt-overlay .jdrn-ok > i { color: #2e7d32; }
+.jdr-ninja-vtt-overlay .jdrn-warn > i { color: #ed6c02; }
+.jdr-ninja-vtt-overlay .jdrn-error > i { color: #c62828; }
+.jdr-ninja-vtt-overlay .jdrn-unknown > i { color: #9e9e9e; }
+
+.jdr-ninja-vtt-overlay .jdrn-lasttest {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Relay toggle */
+.jdr-ninja-vtt-overlay .jdrn-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.25rem;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-toggle-label { font-weight: 600; }
+
+.jdr-ninja-vtt-overlay .jdrn-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: auto;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-switch-track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: #9e9e9e;
+  transition: background 0.15s ease;
+  flex: 0 0 auto;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-switch.on .jdrn-switch-track { background: #2e7d32; }
+
+.jdr-ninja-vtt-overlay .jdrn-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-switch.on .jdrn-switch-thumb { transform: translateX(18px); }
+
+.jdr-ninja-vtt-overlay .jdrn-switch-state { font-size: 0.8rem; font-weight: 600; }
+
+/* Advanced */
+.jdr-ninja-vtt-overlay .jdrn-disclosure {
+  background: none;
+  border: none;
+  padding: 0.3rem 0.25rem;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: auto;
+  opacity: 0.85;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-advanced-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.4rem 0.25rem 0;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.jdr-ninja-vtt-overlay .jdrn-field > span { font-weight: 600; font-size: 0.82rem; }
+.jdr-ninja-vtt-overlay .jdrn-field input { width: 100%; }
+
+/* Narrow layouts: stack buttons full width. */
+@media (max-width: 520px) {
+  .jdr-ninja-vtt-overlay .jdrn-actions { flex-direction: column; align-items: stretch; }
+  .jdr-ninja-vtt-overlay .jdrn-btn { justify-content: center; }
+}

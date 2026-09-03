@@ -1,0 +1,125 @@
+{{!--
+  JDR Ninja VTT Overlay ApplicationV2 settings panel.
+  All user-facing text goes through {{localize}} / the JS-built `rows`.
+  Buttons use data-action; the ApplicationV2 action map wires them to handlers.
+--}}
+<section class="jdrn-panel">
+
+  {{!-- Connection --}}
+  <fieldset class="jdrn-section">
+    <legend>{{localize "JDRNINJA_VTT_OVERLAY.panel.connectionHeading"}}</legend>
+
+    <div class="jdrn-status jdrn-status-{{statusClass}}">
+      <span class="jdrn-badge">{{statusLabel}}</span>
+      {{#if account}}<span class="jdrn-account">{{account}}</span>{{/if}}
+    </div>
+
+    <p class="jdrn-device">
+      <span class="jdrn-muted">{{localize "JDRNINJA_VTT_OVERLAY.panel.deviceLabel"}}</span>
+      {{deviceName}}
+    </p>
+
+    <div class="jdrn-actions">
+      <button type="button" class="jdrn-btn jdrn-btn-primary" data-action="link" {{#if busy}}disabled{{/if}}>
+        <i class="fas fa-link"></i> {{linkButtonLabel}}
+      </button>
+      <button type="button" class="jdrn-btn" data-action="testConnection" {{#if busy}}disabled{{/if}}>
+        <i class="fas fa-stethoscope"></i> {{localize "JDRNINJA_VTT_OVERLAY.panel.button.testConnection"}}
+      </button>
+    </div>
+  </fieldset>
+
+  {{!-- Paid notice --}}
+  {{#if showPaidNotice}}
+  <div class="jdrn-notice jdrn-notice-paid">
+    <i class="fas fa-crown"></i>
+    <div>
+      <p>{{localize "JDRNINJA_VTT_OVERLAY.panel.paidRequired"}}</p>
+      <button type="button" class="jdrn-link" data-action="openSubscription">
+        {{localize "JDRNINJA_VTT_OVERLAY.panel.subscriptionLink"}}
+      </button>
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- Diagnostics checklist --}}
+  <fieldset class="jdrn-section">
+    <legend>{{localize "JDRNINJA_VTT_OVERLAY.panel.diagnosticsHeading"}}</legend>
+    {{#if hasDiagnostics}}
+      <ul class="jdrn-checklist">
+        {{#each rows}}
+        <li class="jdrn-check {{this.cssClass}}">
+          <i class="fas {{this.icon}}" aria-hidden="true"></i>
+          <span class="jdrn-check-label">{{this.label}}</span>
+          <span class="jdrn-check-message">{{this.message}}</span>
+        </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p class="jdrn-muted">{{localize "JDRNINJA_VTT_OVERLAY.panel.diagnosticsEmpty"}}</p>
+    {{/if}}
+
+    {{#if lastTestLine}}
+      <p class="jdrn-lasttest">{{lastTestLine}}</p>
+    {{/if}}
+  </fieldset>
+
+  {{!-- Test --}}
+  <fieldset class="jdrn-section">
+    <legend>{{localize "JDRNINJA_VTT_OVERLAY.panel.testHeading"}}</legend>
+    <div class="jdrn-actions">
+      <button type="button" class="jdrn-btn" data-action="sendTestRoll" {{#if busy}}disabled{{/if}}>
+        <i class="fas fa-dice-d20"></i> {{localize "JDRNINJA_VTT_OVERLAY.panel.button.sendTestRoll"}}
+      </button>
+    </div>
+    <p class="jdrn-muted">{{localize "JDRNINJA_VTT_OVERLAY.panel.testHint"}}</p>
+  </fieldset>
+
+  {{!-- Relay toggle --}}
+  <div class="jdrn-toggle-row">
+    <label class="jdrn-toggle-label" for="jdrn-relay-toggle">
+      {{localize "JDRNINJA_VTT_OVERLAY.panel.relayToggle"}}
+    </label>
+    <button type="button" id="jdrn-relay-toggle"
+            class="jdrn-switch {{#if relayOn}}on{{/if}}"
+            data-action="toggleRelay"
+            role="switch"
+            aria-checked="{{#if relayOn}}true{{else}}false{{/if}}">
+      <span class="jdrn-switch-track"><span class="jdrn-switch-thumb"></span></span>
+      <span class="jdrn-switch-state">
+        {{#if relayOn}}{{localize "JDRNINJA_VTT_OVERLAY.panel.relayOn"}}{{else}}{{localize "JDRNINJA_VTT_OVERLAY.panel.relayOff"}}{{/if}}
+      </span>
+    </button>
+  </div>
+
+  {{!-- Advanced configuration (base URL + manual token paste fallback) --}}
+  <div class="jdrn-advanced">
+    <button type="button" class="jdrn-disclosure" data-action="toggleAdvanced"
+            aria-expanded="{{#if advancedOpen}}true{{else}}false{{/if}}">
+      <i class="fas {{#if advancedOpen}}fa-chevron-down{{else}}fa-chevron-right{{/if}}"></i>
+      {{localize "JDRNINJA_VTT_OVERLAY.panel.advancedHeading"}}
+    </button>
+
+    {{#if advancedOpen}}
+    <div class="jdrn-advanced-body">
+      <label class="jdrn-field">
+        <span>{{localize "JDRNINJA_VTT_OVERLAY.panel.baseUrlLabel"}}</span>
+        <input type="url" name="baseUrl" value="{{baseUrl}}" placeholder="https://www.jdr.ninja" autocomplete="off" spellcheck="false" />
+      </label>
+
+      <label class="jdrn-field">
+        <span>{{localize "JDRNINJA_VTT_OVERLAY.panel.tokenLabel"}}</span>
+        <input type="password" name="token" value="" placeholder="jdr_fvtt_…" autocomplete="off" spellcheck="false" />
+        <small class="jdrn-muted">{{localize "JDRNINJA_VTT_OVERLAY.panel.tokenHint"}}</small>
+      </label>
+
+      <div class="jdrn-actions">
+        <button type="button" class="jdrn-btn" data-action="saveAdvanced" {{#if busy}}disabled{{/if}}>
+          <i class="fas fa-floppy-disk"></i> {{localize "JDRNINJA_VTT_OVERLAY.panel.button.save"}}
+        </button>
+      </div>
+    </div>
+    {{/if}}
+  </div>
+
+</section>

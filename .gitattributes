@@ -1,0 +1,9 @@
+# Everything here is text, and every tool that writes it writes LF: esbuild for the bundle,
+# tools/stamp.mjs for module.json. Without this, a checkout on Windows produces CRLF and the
+# next `npm run release` rewrites the whole manifest as LF, showing a one line version bump as
+# a 68 line diff. Normalizing the working tree to LF keeps the tree matching its own tooling.
+* text=auto eol=lf
+
+# The release workflow's shell steps run on Linux. A stray CR inside a `run:` block ends up in
+# the variable, so the semver guard would reject its own tag.
+*.yml eol=lf
