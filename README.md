@@ -20,7 +20,7 @@ Foundry is the dice authority: the module sends the exact result your players sa
 The module is **free to install and pair**. Linking a browser to a JDR Ninja account,
 running the diagnostics, and sending the built-in test roll all work at no cost.
 
-**Relaying real Foundry rolls to the OBS overlay requires a paid JDR Ninja plan.**
+**Relaying real Foundry rolls to the OBS overlay requires a [paid JDR Ninja plan].**
 Without a paid plan, pairing and diagnostics still work, but live roll posts are declined
 (the module shows a "subscription required" message) and no dice animate on the overlay.
 A client-only visual demo remains available on the JDR Ninja VTT Overlay settings page on
@@ -147,3 +147,4 @@ source code only: it does not grant permission to use the JDR Ninja name or bran
 identify a fork or a derived work.
 
 [Dice So Nice]: https://gitlab.com/riccisi/foundryvtt-dice-so-nice
+[paid JDR Ninja plan]: https://www.jdr.ninja/vtt-overlay/abonnement
