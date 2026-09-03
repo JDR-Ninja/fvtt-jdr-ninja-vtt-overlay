@@ -76,6 +76,31 @@ no world setting. Whoever pairs their browser broadcasts every public roll they 
 *their own* overlay. Accidental duplicates (for example the same account in two tabs) are
 absorbed by the server's per-overlay idempotency on the Foundry message id.
 
+## Holding the result card (optional)
+
+By default the card appears as soon as Foundry posts it, which on stream means the result is
+readable before the overlay dice have finished falling. **Hold the result card** (in the module's
+Foundry settings) delays it. It is **off by default** and client scope, so it affects only the
+browser you set it in, and only the rolls that browser relays.
+
+Read the value as *"do not reveal the card before N seconds after the roll"*, not as *"wait N
+seconds extra"*. The distinction matters when [Dice So Nice] is installed:
+
+- DSN's own `Display chat message immediately` is a **world** setting that defaults to **off**, so
+  **DSN already holds the card** until its 3D animation ends.
+- The two holds are independent gates on the same card, so the card appears when the **later** of
+  the two lets go. They never add up, and there is no double delay to avoid.
+- The consequence to expect: a hold **shorter** than DSN's animation changes nothing visible. That
+  is not a bug. Read the *Result card hold* row in the diagnostics checklist, which says when DSN
+  is also holding, and pick a value above it.
+
+Tune it against your OBS composite, aiming for the moment the overlay dice **settle**: they stay on
+screen for the display duration configured on JDR Ninja well after that.
+
+What a hold does **not** delay: combat tracker initiative values (DSN masks those itself, so
+without DSN they still appear immediately), Foundry's own dice sound, and inline rolls inside
+non-roll messages.
+
 ## Diagnostics and test
 
 The settings panel exposes:

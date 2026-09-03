@@ -6,6 +6,15 @@ All notable changes to this module are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0]
+
+### Added
+
+- Optional **result card hold** (client scope, off by default): delays the roll's card in chat so
+  the overlay dice land before the result is readable. Implemented as a "no earlier than" deadline
+  anchored at the roll rather than an extra wait, so it composes with Dice So Nice's own hold as
+  the later of the two instead of adding to it. A diagnostics row reports what is in effect.
+
 ## [1.0.0]
 
 First public release.

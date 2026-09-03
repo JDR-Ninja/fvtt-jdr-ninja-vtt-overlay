@@ -12,6 +12,14 @@
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.allPublic": "Alle öffentlichen Würfe",
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.playersOnly": "Nur Würfe der Spieler",
 
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.name": "Ergebniskarte zurückhalten",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.hint": "Verzögert die Karte des Wurfs im Chat, damit die Würfel im Overlay zuerst landen. Die Verzögerung bedeutet \"nicht vor\", gerechnet ab dem Wurf, und ist keine zusätzliche Wartezeit: hält Dice So Nice die Karte ohnehin länger zurück, ändert diese Einstellung nichts. Betrifft nur diesen Browser und nur die Würfe, die er weiterleitet.",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.off": "Aus (sofort anzeigen)",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s1": "1 Sekunde",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s2": "2 Sekunden",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s3": "3 Sekunden",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s5": "5 Sekunden",
+
   "JDRNINJA_VTT_OVERLAY.panel.title": "JDR Ninja VTT Overlay",
   "JDRNINJA_VTT_OVERLAY.panel.connectionHeading": "Verbindung",
   "JDRNINJA_VTT_OVERLAY.panel.status.connected": "Verbunden",
@@ -44,6 +52,12 @@
   "JDRNINJA_VTT_OVERLAY.diag.relay.label": "Weiterleitung",
   "JDRNINJA_VTT_OVERLAY.diag.relay.ok": "Dieses Gerät leitet öffentliche Würfe weiter.",
   "JDRNINJA_VTT_OVERLAY.diag.relay.broken": "Dieses Gerät leitet keine Würfe weiter. Aktiviere „Würfe von diesem Gerät weiterleiten“.",
+
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.label": "Zurückhalten der Karte",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.off": "Die Ergebniskarte erscheint sofort.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.on": "Die Ergebniskarte wird bis {seconds} s nach dem Wurf zurückgehalten.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.onWithDsn": "Die Ergebniskarte wird bis {seconds} s nach dem Wurf zurückgehalten. Dice So Nice hält sie zusätzlich bis zum Ende der eigenen Animation zurück, es gilt also der spätere der beiden Zeitpunkte.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.inactive": "Ein Zurückhalten ist eingestellt, aber dieses Gerät leitet nicht weiter, daher wird keine Karte zurückgehalten.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.label": "Authentifizierung",
   "JDRNINJA_VTT_OVERLAY.diag.auth.ok": "Token akzeptiert.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.broken": "Ungültiges oder widerrufenes Token. Verknüpfe das Modul erneut.",

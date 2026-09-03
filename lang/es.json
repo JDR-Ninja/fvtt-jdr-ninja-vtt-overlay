@@ -12,6 +12,14 @@
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.allPublic": "Todas las tiradas públicas",
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.playersOnly": "Solo tiradas de jugadores",
 
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.name": "Retener la tarjeta de resultado",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.hint": "Retrasa la tarjeta de la tirada en el chat para que los dados del overlay caigan antes. El retraso significa «no antes de», contado desde la tirada, y no una espera adicional: si Dice So Nice ya retiene la tarjeta más tiempo, este ajuste no cambia nada. Solo afecta a este navegador y solo a las tiradas que retransmite.",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.off": "Desactivado (mostrar de inmediato)",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s1": "1 segundo",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s2": "2 segundos",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s3": "3 segundos",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s5": "5 segundos",
+
   "JDRNINJA_VTT_OVERLAY.panel.title": "JDR Ninja VTT Overlay",
   "JDRNINJA_VTT_OVERLAY.panel.connectionHeading": "Conexión",
   "JDRNINJA_VTT_OVERLAY.panel.status.connected": "Conectado",
@@ -44,6 +52,12 @@
   "JDRNINJA_VTT_OVERLAY.diag.relay.label": "Retransmisión",
   "JDRNINJA_VTT_OVERLAY.diag.relay.ok": "Este dispositivo retransmite las tiradas públicas.",
   "JDRNINJA_VTT_OVERLAY.diag.relay.broken": "Este dispositivo no retransmite las tiradas. Activa «Retransmitir las tiradas desde este dispositivo».",
+
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.label": "Retención de la tarjeta",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.off": "La tarjeta de resultado aparece de inmediato.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.on": "La tarjeta de resultado se retiene hasta {seconds} s después de la tirada.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.onWithDsn": "La tarjeta de resultado se retiene hasta {seconds} s después de la tirada. Dice So Nice también la retiene hasta que acaba su propia animación, así que se aplica la más tardía de las dos.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.inactive": "Hay una retención configurada, pero este dispositivo no retransmite, así que no se retiene ninguna tarjeta.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.label": "Autenticación",
   "JDRNINJA_VTT_OVERLAY.diag.auth.ok": "Token aceptado.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.broken": "Token no válido o revocado. Vuelve a vincular el módulo.",

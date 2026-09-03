@@ -12,6 +12,14 @@
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.allPublic": "Tous les jets publics",
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.playersOnly": "Jets des joueurs uniquement",
 
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.name": "Retenir la carte de résultat",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.hint": "Retarde la carte du jet dans le chat pour que les dés de l'overlay retombent avant. Le délai signifie « pas avant », compté depuis le jet, et non une attente supplémentaire : si Dice So Nice retient déjà la carte plus longtemps, ce réglage ne change rien. N'affecte que ce navigateur, et seulement les jets qu'il relaie.",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.off": "Désactivé (affichage immédiat)",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s1": "1 seconde",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s2": "2 secondes",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s3": "3 secondes",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s5": "5 secondes",
+
   "JDRNINJA_VTT_OVERLAY.panel.title": "JDR Ninja VTT Overlay",
   "JDRNINJA_VTT_OVERLAY.panel.connectionHeading": "Connexion",
   "JDRNINJA_VTT_OVERLAY.panel.status.connected": "Connecté",
@@ -44,6 +52,12 @@
   "JDRNINJA_VTT_OVERLAY.diag.relay.label": "Relais",
   "JDRNINJA_VTT_OVERLAY.diag.relay.ok": "Cet appareil relaie les jets publics.",
   "JDRNINJA_VTT_OVERLAY.diag.relay.broken": "Cet appareil ne relaie pas les jets. Active « Relayer les jets depuis cet appareil ».",
+
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.label": "Rétention de la carte",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.off": "La carte de résultat s'affiche immédiatement.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.on": "La carte de résultat est retenue jusqu'à {seconds} s après le jet.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.onWithDsn": "La carte de résultat est retenue jusqu'à {seconds} s après le jet. Dice So Nice la retient aussi jusqu'à la fin de sa propre animation : le plus tardif des deux s'applique.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.inactive": "Une rétention est configurée, mais cet appareil ne relaie pas, donc aucune carte n'est retenue.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.label": "Authentification",
   "JDRNINJA_VTT_OVERLAY.diag.auth.ok": "Jeton accepté.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.broken": "Jeton invalide ou révoqué. Relie le module.",

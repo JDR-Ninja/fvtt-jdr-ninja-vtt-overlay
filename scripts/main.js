@@ -24,6 +24,12 @@ const I18N = "JDRNINJA_VTT_OVERLAY";
 /** Persistent hook only needs to fire the fallback if DSN never starts this roll. */
 const DSN_FALLBACK_MS = 2000;
 
+/** Class that hides a held chat card. Deliberately ours alone, never DSN's `dsn-hide`. */
+const CARD_HOLD_CLASS = "jdrn-hold";
+
+/** Ceiling on the hold, so a value set from the console cannot freeze the chat log. */
+const CARD_HOLD_MAX_MS = 10_000;
+
 /** Minimum gap between two `lastSuccessAt` writes (see recordSuccess). */
 const SUCCESS_STAMP_THROTTLE_MS = 60_000;
 
@@ -33,6 +39,7 @@ const S = Object.freeze({
   deviceToken: "deviceToken",
   relayEnabled: "relayEnabled",
   forwardFilter: "forwardFilter",
+  cardHoldSeconds: "cardHoldSeconds",
   lastSuccessAt: "lastSuccessAt",
   lastErrorAt: "lastErrorAt",
   lastError: "lastError"
@@ -63,6 +70,28 @@ function getRelayToggle() {
 }
 function getForwardFilter() {
   return game.settings.get(MODULE_ID, S.forwardFilter) || FILTER.allPublic;
+}
+
+/** Chat-card hold in ms, 0 when off. Stored in whole seconds, like every Foundry select. */
+function getCardHoldMs() {
+  const seconds = Number.parseInt(String(game.settings.get(MODULE_ID, S.cardHoldSeconds) ?? "0"), 10);
+  if (!Number.isFinite(seconds) || seconds <= 0) return 0;
+  return Math.min(seconds * 1000, CARD_HOLD_MAX_MS);
+}
+
+/**
+ * Does DSN withhold roll cards on its own right now? Its `immediatelyDisplayChatMessages` is a
+ * WORLD setting defaulting to false, so out of the box DSN already holds every animated roll's
+ * card until its 3D animation ends. Read defensively: `get` throws on an unregistered key, which
+ * is exactly what happens when DSN is absent.
+ */
+function dsnHoldsCards() {
+  if (!game.dice3d) return false;
+  try {
+    return game.settings.get("dice-so-nice", "immediatelyDisplayChatMessages") !== true;
+  } catch {
+    return false;
+  }
 }
 
 /** This browser relays iff it holds a device token AND the local relay toggle is on. */
@@ -375,6 +404,62 @@ function dispatch(messageId, payload) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Chat-card hold                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * messageId -> epoch ms before which this message's card stays hidden.
+ *
+ * A DEADLINE, deliberately not a duration, and anchored at message creation:
+ *
+ *  - No double delay. Two independent "hide until my own condition" gates compose as max(), not
+ *    as a sum: DSN removes only `dsn-hide`, we remove only CARD_HOLD_CLASS, so the card appears
+ *    when the later of the two lets go. Chaining on `diceSoNiceRollComplete` instead would both
+ *    add the delays AND flash the card, since that hook fires AFTER DSN has revealed it.
+ *  - The configured value keeps meaning one thing. DSN's own hold varies with the dice count
+ *    (its settle is `iterations / 60` s), so a value tuned as a "top up on top of DSN" would be
+ *    wrong on the next roll, and absurd if DSN were later disabled.
+ */
+const cardHoldUntil = new Map();
+
+/**
+ * Register a hold for a message this browser just relayed.
+ *
+ * The reveal timer is armed here rather than at render time, which makes release unconditional:
+ * it fires whether or not the POST succeeded, whether or not the plan is paid, and whether or not
+ * an overlay is even connected. That is why no separate cap or cleanup pass is needed.
+ */
+function holdCard(messageId, holdMs) {
+  if (holdMs <= 0 || cardHoldUntil.has(messageId)) return;
+  cardHoldUntil.set(messageId, Date.now() + holdMs);
+  setTimeout(() => {
+    cardHoldUntil.delete(messageId);
+    revealCard(messageId);
+  }, holdMs);
+}
+
+/**
+ * Drop our hide class from every rendered instance of a message: the sidebar card, the popout
+ * chat card and the chat notification pip. Same three surfaces DSN reveals, found the same way.
+ */
+function revealCard(messageId) {
+  try {
+    const held = document.querySelectorAll(
+      `.${CARD_HOLD_CLASS}[data-message-id="${CSS.escape(messageId)}"]`
+    );
+    for (const el of held) {
+      el.classList.remove(CARD_HOLD_CLASS);
+      // A pip that spent its whole lifespan hidden would expire the instant it is revealed.
+      if (el.closest("#chat-notifications")) {
+        try { el._lifeSpan = 0; } catch { /* private and cosmetic; never worth throwing over */ }
+      }
+    }
+  } catch (err) {
+    console.error(`${MODULE_ID} | revealing a held chat card failed`, err);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* ApplicationV2 settings panel                                        */
 /* ------------------------------------------------------------------ */
 
@@ -485,6 +570,21 @@ class JdrNinjaOverlayPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       push("relay", "error", L("diag.relay.broken"));
     } else {
       push("relay", relayOn ? "ok" : "warn", relayOn ? L("diag.relay.ok") : L("diag.relay.broken"));
+    }
+
+    // 3. Chat-card hold, client-side like the two above: a local display choice, not a server fact.
+    // Stated here because the hold is invisible when it is shorter than DSN's own (max(), not sum),
+    // which otherwise reads as a broken setting.
+    const holdMs = getCardHoldMs();
+    if (holdMs <= 0) {
+      push("cardHold", "ok", L("diag.cardHold.off"));
+    } else if (!thisClientRelays()) {
+      push("cardHold", "warn", L("diag.cardHold.inactive"));
+    } else {
+      const seconds = Math.round(holdMs / 1000);
+      push("cardHold", "ok", dsnHoldsCards()
+        ? Fmt("diag.cardHold.onWithDsn", { seconds })
+        : Fmt("diag.cardHold.on", { seconds }));
     }
 
     // Remaining rows depend on the server call.
@@ -741,6 +841,26 @@ function registerSettings() {
     }
   });
 
+  // Off by default: the right value depends on this streamer's OBS composite and on what DSN is
+  // already doing, so it is tuned by hand rather than guessed. Client scope like everything else
+  // here, and correctly so: only the browser OBS captures gains anything from a hold, and a world
+  // setting would delay every player's card for nothing.
+  game.settings.register(MODULE_ID, S.cardHoldSeconds, {
+    name: `${I18N}.settings.cardHold.name`,
+    hint: `${I18N}.settings.cardHold.hint`,
+    scope: "client",
+    config: true,
+    type: String,
+    default: "0",
+    choices: {
+      "0": `${I18N}.settings.cardHold.off`,
+      "1": `${I18N}.settings.cardHold.s1`,
+      "2": `${I18N}.settings.cardHold.s2`,
+      "3": `${I18N}.settings.cardHold.s3`,
+      "5": `${I18N}.settings.cardHold.s5`
+    }
+  });
+
   // Diagnostics timestamps / last error (never shown as config fields).
   game.settings.register(MODULE_ID, S.lastSuccessAt, { scope: "client", config: false, type: Number, default: 0 });
   game.settings.register(MODULE_ID, S.lastErrorAt, { scope: "client", config: false, type: Number, default: 0 });
@@ -797,8 +917,21 @@ Hooks.on("createChatMessage", (message) => {
     const payload = buildPayload(message);
     if (!payload) return;
 
+    // Only rolls that got this far are held: a card the overlay never received must never wait.
+    holdCard(message.id, getCardHoldMs());
+
     dispatch(message.id, payload);
   } catch (err) {
     console.error(`${MODULE_ID} | createChatMessage relay failed`, err);
   }
+});
+
+// The same hook DSN hides through, chosen for the same reason: by the time it fires every
+// `createChatMessage` handler has already run, so the hold deadline is known. Re-applied on EVERY
+// render, because the chat log re-renders on scroll, on popout and on sidebar tab switches, and a
+// one-shot hide would let any of those reveal the card early.
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  const revealAt = cardHoldUntil.get(message.id);
+  if (!revealAt || Date.now() >= revealAt) return;
+  html.classList.add(CARD_HOLD_CLASS);
 });

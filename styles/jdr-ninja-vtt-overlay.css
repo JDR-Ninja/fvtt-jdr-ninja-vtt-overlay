@@ -225,3 +225,9 @@
   .jdr-ninja-vtt-overlay .jdrn-actions { flex-direction: column; align-items: stretch; }
   .jdr-ninja-vtt-overlay .jdrn-btn { justify-content: center; }
 }
+
+/* Chat-card hold. Deliberately NOT scoped under .jdr-ninja-vtt-overlay: this class lands on chat
+   messages in the sidebar, in the popout chat and in the notification pip, none of which are
+   inside our panel. Kept separate from Dice So Nice's own `.dsn-hide` so the two holds compose as
+   the later of the two rather than fighting over one class. */
+.jdrn-hold { display: none !important; }

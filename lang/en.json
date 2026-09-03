@@ -12,6 +12,14 @@
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.allPublic": "All public rolls",
   "JDRNINJA_VTT_OVERLAY.settings.forwardFilter.playersOnly": "Player rolls only",
 
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.name": "Hold the result card",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.hint": "Delays the roll's card in chat so the overlay dice land first. This is a \"no earlier than\" delay counted from the roll, not an extra wait: if Dice So Nice already holds the card for longer, this changes nothing. Affects only this browser, and only the rolls it relays.",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.off": "Off (show immediately)",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s1": "1 second",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s2": "2 seconds",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s3": "3 seconds",
+  "JDRNINJA_VTT_OVERLAY.settings.cardHold.s5": "5 seconds",
+
   "JDRNINJA_VTT_OVERLAY.panel.title": "JDR Ninja VTT Overlay",
   "JDRNINJA_VTT_OVERLAY.panel.connectionHeading": "Connection",
   "JDRNINJA_VTT_OVERLAY.panel.status.connected": "Connected",
@@ -44,6 +52,12 @@
   "JDRNINJA_VTT_OVERLAY.diag.relay.label": "Relay",
   "JDRNINJA_VTT_OVERLAY.diag.relay.ok": "This device relays public rolls.",
   "JDRNINJA_VTT_OVERLAY.diag.relay.broken": "This device is not relaying rolls. Enable \"Relay rolls from this device\".",
+
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.label": "Result card hold",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.off": "The result card appears immediately.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.on": "The result card is held until {seconds}s after the roll.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.onWithDsn": "The result card is held until {seconds}s after the roll. Dice So Nice also holds it until its own animation ends, so the later of the two applies.",
+  "JDRNINJA_VTT_OVERLAY.diag.cardHold.inactive": "A hold is configured, but this device is not relaying, so no card is held.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.label": "Authentication",
   "JDRNINJA_VTT_OVERLAY.diag.auth.ok": "Token accepted.",
   "JDRNINJA_VTT_OVERLAY.diag.auth.broken": "Invalid or revoked token. Re-link the module.",
