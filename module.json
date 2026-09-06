@@ -2,7 +2,7 @@
   "id": "jdr-ninja-vtt-overlay",
   "title": "JDR Ninja VTT Overlay",
   "description": "<p>Streams your table's <strong>actual Foundry dice rolls</strong> onto a transparent OBS overlay hosted by JDR Ninja, so viewers see the very dice your players rolled, replayed (never re-rolled) with an optional Dice So Nice color pass-through.</p><p><strong>Free to install and pair.</strong> You can link this module to a JDR Ninja account and run the built-in diagnostics and connection tests at no cost. <strong>Relaying real Foundry rolls to the OBS overlay requires a paid JDR Ninja plan.</strong> Without a paid plan, pairing and diagnostics still work, but live roll relay is declined and a client-only visual demo remains available on the JDR Ninja VTT Overlay settings page.</p><p>Every setting is per-browser (client scope): each table member pairs their own browser to their own JDR Ninja account and streams the table's public rolls to their own overlay. Hidden rolls (GM, blind, self / whispered) are never sent. Works with or without Dice So Nice. System-agnostic: any roll that reaches chat is captured.</p>",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "authors": [
     {
       "name": "JDR Ninja",
@@ -64,5 +64,5 @@
   "changelog": "https://github.com/JDR-Ninja/fvtt-jdr-ninja-vtt-overlay/blob/main/CHANGELOG.md",
   "bugs": "https://github.com/JDR-Ninja/fvtt-jdr-ninja-vtt-overlay/issues",
   "manifest": "https://github.com/JDR-Ninja/fvtt-jdr-ninja-vtt-overlay/releases/latest/download/module.json",
-  "download": "https://github.com/JDR-Ninja/fvtt-jdr-ninja-vtt-overlay/releases/download/v1.1.0/module.zip"
+  "download": "https://github.com/JDR-Ninja/fvtt-jdr-ninja-vtt-overlay/releases/download/v1.2.0/module.zip"
 }
