@@ -6,7 +6,29 @@ All notable changes to this module are documented here. The format follows
 
 ## [Unreleased]
 
-## [1.2.0]
+## [1.3.0] - 2026-09-09
+
+### Added
+
+- **Twitch chat commands** (off by default). A streamer configures on JDR Ninja which words their
+  viewers may type: a word bound to a fixed dice expression, or a word bound to one of the world's
+  roll tables. A table word makes this module perform a real draw, and the resulting public roll
+  animates on the overlay through the ordinary relay, so what viewers see is what the table produced.
+  The module polls JDR Ninja for pending draws while its own switch is on.
+- That switch is deliberately separate from the roll relay: letting viewers roll dice never lets them
+  draw from a world's tables by accident. Only a Game Master browser answers, because a draw writes a
+  chat message into the world, and every draw stays in the world's chat log.
+- Tables are named by their Foundry UUID, so tables from compendiums work, not just world-local ones.
+  Right-click a table and pick Copy UUID.
+- Viewers receive no reply of any kind: the module requests no Twitch write scope. A command that no
+  paired browser picks up simply expires.
+- Because JDR Ninja cannot see inside a world, this client is the only thing that can check a draw is
+  possible. It verifies the UUID resolves, that it is really a RollTable, and that every die in the
+  formula is one the overlay has a 3D mesh for (`d4` `d6` `d8` `d10` `d12` `d20`). Note what that
+  excludes: `1d100`, and Foundry's default table formula `1d{results.length}`, which yields shapes
+  like d7 or d13. A refused draw is logged to the console and nowhere else.
+
+## [1.2.0] - 2026-09-06
 
 ### Added
 
@@ -15,7 +37,7 @@ All notable changes to this module are documented here. The format follows
   anchored at the roll rather than an extra wait, so it composes with Dice So Nice's own hold as
   the later of the two instead of adding to it. A diagnostics row reports what is in effect.
 
-## [1.0.0]
+## [1.0.0] - 2026-09-03
 
 First public release.
 

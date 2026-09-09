@@ -92,6 +92,39 @@
     </button>
   </div>
 
+  {{!-- Twitch table commands (GM only: a draw writes a chat message into the world) --}}
+  {{#if isGm}}
+  <fieldset class="jdrn-section">
+    <legend>{{localize "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHeading"}}</legend>
+
+    <p class="jdrn-muted">{{localize "JDRNINJA_VTT_OVERLAY.panel.tableCommandsIntro"}}</p>
+
+    <div class="jdrn-toggle-row">
+      <label class="jdrn-toggle-label" for="jdrn-table-toggle">
+        {{localize "JDRNINJA_VTT_OVERLAY.panel.tableCommandsToggle"}}
+      </label>
+      <button type="button" id="jdrn-table-toggle"
+              class="jdrn-switch {{#if tableCommandsOn}}on{{/if}}"
+              data-action="toggleTableCommands"
+              role="switch"
+              aria-checked="{{#if tableCommandsOn}}true{{else}}false{{/if}}">
+        <span class="jdrn-switch-track"><span class="jdrn-switch-thumb"></span></span>
+        <span class="jdrn-switch-state">
+          {{#if tableCommandsOn}}{{localize "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOn"}}{{else}}{{localize "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOff"}}{{/if}}
+        </span>
+      </button>
+    </div>
+
+    <div class="jdrn-actions">
+      <button type="button" class="jdrn-btn" data-action="openCommands">
+        <i class="fas fa-arrow-up-right-from-square"></i>
+        {{localize "JDRNINJA_VTT_OVERLAY.panel.button.openCommands"}}
+      </button>
+    </div>
+    <p class="jdrn-muted">{{localize "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHint"}}</p>
+  </fieldset>
+  {{/if}}
+
   {{!-- Advanced configuration (base URL + manual token paste fallback) --}}
   <div class="jdrn-advanced">
     <button type="button" class="jdrn-disclosure" data-action="toggleAdvanced"

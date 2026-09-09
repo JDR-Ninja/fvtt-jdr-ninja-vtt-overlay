@@ -33,6 +33,22 @@ const CARD_HOLD_MAX_MS = 10_000;
 /** Minimum gap between two `lastSuccessAt` writes (see recordSuccess). */
 const SUCCESS_STAMP_THROTTLE_MS = 60_000;
 
+/** Poll cadence for the web to Foundry command channel. */
+const TABLE_POLL_INTERVAL_MS = 2500;
+
+/** Ceiling on the failure back-off, so a site outage settles into one call per minute. */
+const TABLE_POLL_MAX_BACKOFF_MS = 60_000;
+
+/**
+ * Face counts JDR Ninja has a real 3D mesh for. The overlay draws dice and nothing else, so a table
+ * whose formula rolls anything outside this set produces an EMPTY overlay, which reads as a broken
+ * feature rather than a missing die. Note that Foundry's default table formula is `1d{results.length}`,
+ * so an untouched table is usually ineligible: d7, d13, d17. So is `1d100`, the most common authored
+ * shape. The site cannot warn about this when the streamer configures the command, because it has no
+ * view of this world, so this client is the only thing standing between a bad table and a blank overlay.
+ */
+const MESH_BACKED_FACES = Object.freeze([4, 6, 8, 10, 12, 20]);
+
 /** Setting keys (all client scope). */
 const S = Object.freeze({
   baseUrl: "baseUrl",
@@ -40,6 +56,7 @@ const S = Object.freeze({
   relayEnabled: "relayEnabled",
   forwardFilter: "forwardFilter",
   cardHoldSeconds: "cardHoldSeconds",
+  tableCommandsEnabled: "tableCommandsEnabled",
   lastSuccessAt: "lastSuccessAt",
   lastErrorAt: "lastErrorAt",
   lastError: "lastError"
@@ -97,6 +114,60 @@ function dsnHoldsCards() {
 /** This browser relays iff it holds a device token AND the local relay toggle is on. */
 function thisClientRelays() {
   return getToken().length > 0 && getRelayToggle();
+}
+
+function getTableCommandsToggle() {
+  return game.settings.get(MODULE_ID, S.tableCommandsEnabled) === true;
+}
+
+/**
+ * This browser answers Twitch table commands iff it relays, its own table switch is on, and the user
+ * is a GM. The GM check is not a convenience: `table.draw()` writes a chat message into the world, so
+ * a player client could not perform the draw even if it polled. Requiring it here also keeps the poll
+ * to one browser at a table, which is what makes the per-IP rate limit arithmetic work out.
+ */
+function tableCommandsActive() {
+  return thisClientRelays() && getTableCommandsToggle() && game.user?.isGM === true;
+}
+
+/**
+ * Where a die term can start: an optional count, then `d`. The leading boundary is what stops a
+ * modifier suffix from reading as a second term (the `d1` of `4d6d1`, drop-lowest, is preceded by a
+ * digit) and a word from reading as one (the `d` of `mod` is preceded by a letter). `.` and `@` are
+ * excluded from the boundary on purpose: they introduce a roll-data path (`@abilities.dex.mod`),
+ * where a `d` is never a die.
+ */
+const DIE_TERM_START_RE = /(?:^|[^a-z0-9.@_])\d*d/gi;
+
+/** What follows that `d`: a face count, Fate (`dF`), percentile (`d%`), or explicit faces (`d{1,3,5}`). */
+const FACE_SPEC_RE = /^(\d+|f|%|\{[^}]*\})/i;
+
+/**
+ * Will a draw on this table put a die on the overlay? Every die term in the formula has to be
+ * mesh-backed, because a term we cannot render leaves the overlay blank with no explanation. This is
+ * the ONLY place that check can happen: the streamer configures commands on jdr.ninja, which cannot
+ * read a formula out of a world it has no access to.
+ *
+ * Two steps rather than one regex, because the shapes that must be REFUSED are exactly the ones a
+ * `d(\d+)` pattern cannot see. `1d6 + 1dF` used to yield a single face of 6 and pass, relaying a
+ * FateDie the overlay has no mesh for, which is the blank overlay this guard exists to prevent. So
+ * find every place a die term starts, then classify what follows: anything that is not a plain
+ * mesh-backed face count refuses the draw, including a face spec we cannot even name.
+ */
+function tableFormulaIsMeshBacked(formula) {
+  if (typeof formula !== "string") return false;
+
+  let terms = 0;
+  let meshBacked = 0;
+  for (const start of formula.matchAll(DIE_TERM_START_RE)) {
+    terms++;
+    const spec = FACE_SPEC_RE.exec(formula.slice(start.index + start[0].length));
+    if (!spec) continue;
+    if (/^\d+$/.test(spec[1]) && MESH_BACKED_FACES.includes(Number(spec[1]))) meshBacked++;
+  }
+
+  if (terms === 0) return false; // a formula with no die term draws nothing to animate
+  return meshBacked === terms;
 }
 
 /**
@@ -310,6 +381,31 @@ async function fetchDiagnostics() {
 }
 
 /**
+ * Poll the one downstream endpoint: what does web want this client to do? The server dequeues on
+ * read, so a command is delivered to exactly one browser and never redelivered.
+ * Returns an array of commands, or null when the call failed (the caller backs off).
+ */
+async function fetchCommands() {
+  const baseUrl = getBaseUrl();
+  const token = getToken();
+  if (!baseUrl || !token) return null;
+  try {
+    const res = await fetch(`${baseUrl}/api/vtt-overlay/foundry/commands`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data?.commands) ? data.commands : [];
+  } catch {
+    return null;
+  }
+}
+
+/**
  * RFC 8628 device authorization grant. Returns { ok, token } on approval, or
  * { ok:false, reason } for denied/expired/timeout/error.
  */
@@ -460,6 +556,111 @@ function revealCard(messageId) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Twitch table commands: poll loop and draw                           */
+/* ------------------------------------------------------------------ */
+
+let pollTimer = null;
+let pollBackoffMs = 0;
+let pollInFlight = false;
+
+/**
+ * Act on one dequeued command. The UUID comes from the streamer's own configuration on jdr.ninja, so
+ * this client is executing a reference it did not choose. It therefore verifies what it resolved before
+ * touching it: the document must exist and must actually be a RollTable.
+ *
+ * Every rejection is SILENT to the chat by design, because the viewer who triggered it is a stranger
+ * and there is no reply channel anyway. The console line is what a GM finds when they go looking, and
+ * it is the only diagnosis this feature offers.
+ */
+async function handleDrawCommand(uuid) {
+  const reference = String(uuid ?? "").trim();
+  if (!reference) return;
+
+  let table;
+  try {
+    const resolve = globalThis.fromUuid ?? foundry?.utils?.fromUuid;
+    table = await resolve(reference);
+  } catch (err) {
+    console.warn(`${MODULE_ID} | could not resolve table uuid "${reference}"`, err);
+    return;
+  }
+
+  if (!table) {
+    console.warn(`${MODULE_ID} | table uuid "${reference}" resolves to nothing in this world`);
+    return;
+  }
+  if (table.documentName !== "RollTable") {
+    console.warn(`${MODULE_ID} | uuid "${reference}" is a ${table.documentName}, not a RollTable; draw skipped`);
+    return;
+  }
+
+  // Draw-time eligibility guard, and the only one there is: the site cannot read a formula it has no
+  // access to, and a table's formula can be rewritten long after the command was configured.
+  if (!tableFormulaIsMeshBacked(table.formula)) {
+    console.warn(`${MODULE_ID} | table "${table.name}" has no mesh-backed die (${table.formula}); draw skipped`);
+    return;
+  }
+
+  // Public on purpose, twice over: the module drops hidden rolls before they ever leave this client,
+  // and the GM has to see the result to read it out loud.
+  const publicRoll = CONST?.DICE_ROLL_MODES?.PUBLIC ?? "publicroll";
+  try {
+    // Nothing is posted to the overlay from here. The draw lands in chat, `createChatMessage` picks
+    // it up, and it relays through the ordinary path. One relay path, and the return trip is free.
+    await table.draw({ rollMode: publicRoll });
+  } catch (err) {
+    console.error(`${MODULE_ID} | table draw failed`, err);
+  }
+}
+
+async function pollCommandsOnce() {
+  if (pollInFlight) return;
+  pollInFlight = true;
+  try {
+    const commands = await fetchCommands();
+    if (commands === null) {
+      // Failure: back off so a site outage does not turn into a request every 2.5 s per table.
+      pollBackoffMs = Math.min(
+        TABLE_POLL_MAX_BACKOFF_MS,
+        pollBackoffMs === 0 ? TABLE_POLL_INTERVAL_MS * 2 : pollBackoffMs * 2);
+      return;
+    }
+    pollBackoffMs = 0;
+    for (const command of commands) {
+      if (command?.kind === "drawTable") await handleDrawCommand(command.uuid);
+    }
+  } finally {
+    pollInFlight = false;
+  }
+}
+
+function scheduleNextPoll() {
+  clearTimeout(pollTimer);
+  if (!tableCommandsActive()) {
+    pollTimer = null;
+    return;
+  }
+  // At 2.5 s this client makes 24 polls a minute against a 120/min per-IP limit, leaving room for the
+  // roll relay on the same address. It only holds because a single GM browser polls (see
+  // `tableCommandsActive`); several table members behind one household IP would not fit.
+  pollTimer = setTimeout(async () => {
+    await pollCommandsOnce();
+    scheduleNextPoll();
+  }, pollBackoffMs || TABLE_POLL_INTERVAL_MS);
+}
+
+/** Start, stop, or leave the loop alone so it matches the current settings. Safe to call repeatedly. */
+function syncCommandPolling() {
+  if (!tableCommandsActive()) {
+    clearTimeout(pollTimer);
+    pollTimer = null;
+    pollBackoffMs = 0;
+    return;
+  }
+  if (pollTimer === null) scheduleNextPoll();
+}
+
+/* ------------------------------------------------------------------ */
 /* ApplicationV2 settings panel                                        */
 /* ------------------------------------------------------------------ */
 
@@ -492,6 +693,8 @@ class JdrNinjaOverlayPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       testConnection: JdrNinjaOverlayPanel.#onTestConnection,
       sendTestRoll: JdrNinjaOverlayPanel.#onSendTestRoll,
       toggleRelay: JdrNinjaOverlayPanel.#onToggleRelay,
+      toggleTableCommands: JdrNinjaOverlayPanel.#onToggleTableCommands,
+      openCommands: JdrNinjaOverlayPanel.#onOpenCommands,
       toggleAdvanced: JdrNinjaOverlayPanel.#onToggleAdvanced,
       saveAdvanced: JdrNinjaOverlayPanel.#onSaveAdvanced,
       openSubscription: JdrNinjaOverlayPanel.#onOpenSubscription
@@ -533,7 +736,28 @@ class JdrNinjaOverlayPanel extends HandlebarsApplicationMixin(ApplicationV2) {
       lastTestLine,
       advancedOpen: this.#advancedOpen,
       baseUrl: getBaseUrl(),
-      busy: this.#busy
+      busy: this.#busy,
+      ...this.#tableCommandContext()
+    };
+  }
+
+  /**
+   * The Twitch table-command section. GM only: only a GM can draw, so a player toggling this would
+   * change nothing, and showing them a switch that does nothing is worse than showing them none.
+   *
+   * <p>The commands themselves are NOT edited here. They live on jdr.ninja, keyed by a Foundry UUID,
+   * because that is where the streamer already manages their channel and because a UUID also addresses
+   * compendium tables that a world-local picker never could. This panel owns exactly one decision:
+   * whether this browser answers them.</p>
+   */
+  #tableCommandContext() {
+    const isGm = game.user?.isGM === true;
+    if (!isGm) return { isGm: false, tableCommandsOn: false, commandsUrl: "" };
+
+    return {
+      isGm: true,
+      tableCommandsOn: getTableCommandsToggle(),
+      commandsUrl: `${getBaseUrl() || "https://www.jdr.ninja"}/vtt-overlay/commandes`
     };
   }
 
@@ -761,6 +985,23 @@ class JdrNinjaOverlayPanel extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.render();
   }
 
+  static async #onToggleTableCommands() {
+    if (this.#busy) return;
+    const next = !getTableCommandsToggle();
+    await game.settings.set(MODULE_ID, S.tableCommandsEnabled, next);
+    // The setting's own onChange already syncs the loop; this is here so the toast never lies about
+    // a poll that failed to start because the relay is off or the user is not a GM.
+    syncCommandPolling();
+    ui.notifications.info(next ? L("toast.tableCommandsOn") : L("toast.tableCommandsOff"));
+    if (next && !tableCommandsActive()) ui.notifications.warn(L("toast.tableCommandsInactive"));
+    await this.render();
+  }
+
+  static async #onOpenCommands() {
+    const baseUrl = getBaseUrl() || "https://www.jdr.ninja";
+    try { window.open(`${baseUrl}/vtt-overlay/commandes`, "_blank", "noopener,noreferrer"); } catch { /* ignore */ }
+  }
+
   static async #onToggleAdvanced() {
     this.#advancedOpen = !this.#advancedOpen;
     await this.render();
@@ -825,7 +1066,9 @@ function registerSettings() {
     scope: "client",
     config: true,
     type: Boolean,
-    default: false
+    default: false,
+    // Table commands ride on the relay being on, so stopping the relay must stop the poll too.
+    onChange: () => syncCommandPolling()
   });
 
   game.settings.register(MODULE_ID, S.forwardFilter, {
@@ -861,6 +1104,21 @@ function registerSettings() {
     }
   });
 
+  // Deliberately NOT the same switch as relay: a streamer who wants viewers to roll dice must not
+  // get viewers drawing from their tables as a side effect. Off by default, and client scope because
+  // it decides which browser answers, not what the world exposes. Only a GM client can act on it
+  // (see tableCommandsActive), so a player turning it on changes nothing.
+  game.settings.register(MODULE_ID, S.tableCommandsEnabled, {
+    name: `${I18N}.settings.tableCommands.name`,
+    hint: `${I18N}.settings.tableCommands.hint`,
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => syncCommandPolling()
+  });
+
+
   // Diagnostics timestamps / last error (never shown as config fields).
   game.settings.register(MODULE_ID, S.lastSuccessAt, { scope: "client", config: false, type: Number, default: 0 });
   game.settings.register(MODULE_ID, S.lastErrorAt, { scope: "client", config: false, type: Number, default: 0 });
@@ -884,6 +1142,12 @@ function registerSettings() {
 Hooks.once("init", () => {
   registerSettings();
   console.log(`${MODULE_ID} | initialized`);
+});
+
+// Polling starts at "ready", never at "init": it needs game.user for the GM check, which does not exist
+// yet when settings are registered.
+Hooks.once("ready", () => {
+  syncCommandPolling();
 });
 
 // Persistent DSN start hook (id-matched). Registering it unconditionally is harmless

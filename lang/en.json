@@ -103,5 +103,18 @@
   "JDRNINJA_VTT_OVERLAY.toast.saved": "Settings saved.",
 
   "JDRNINJA_VTT_OVERLAY.misc.unknownRoller": "Unknown",
-  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Browser"
+  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Browser",
+
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.name": "Allow Twitch table commands",
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.hint": "When on, this browser answers the chat commands you configured on JDR Ninja: a viewer typing one of your words draws from the roll table you bound to it. Off by default, and separate from the roll relay, so letting viewers roll dice never lets them draw from your tables. Only a Game Master browser answers. Every draw is a permanent entry in your world's chat log.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHeading": "Twitch table commands",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsIntro": "Which words your viewers can type, and which table each one draws from, is configured on JDR Ninja. This switch decides only whether this browser is the one that answers them.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsToggle": "Answer table commands from this browser",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOn": "On",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOff": "Off",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHint": "Tables are named by their Foundry UUID, so tables from compendiums work too. Right-click a table and pick Copy UUID, then paste it on the site.",
+  "JDRNINJA_VTT_OVERLAY.panel.button.openCommands": "Manage commands on JDR Ninja",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOn": "Twitch table commands are on for this browser.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOff": "Twitch table commands are off for this browser.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsInactive": "Nothing will be answered yet: table commands also need the roll relay on, and a Game Master browser."
 }

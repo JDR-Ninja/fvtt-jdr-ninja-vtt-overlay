@@ -103,5 +103,18 @@
   "JDRNINJA_VTT_OVERLAY.toast.saved": "Configurações salvas.",
 
   "JDRNINJA_VTT_OVERLAY.misc.unknownRoller": "Desconhecido",
-  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Navegador"
+  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Navegador",
+
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.name": "Permitir comandos de tabela do Twitch",
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.hint": "Quando ativo, este navegador responde aos comandos de chat que você configurou no JDR Ninja: um espectador que digita uma das suas palavras sorteia na tabela que você associou a ela. Desligado por padrão e separado do repasse de rolagens, então permitir que espectadores rolem dados nunca permite que sorteiem nas suas tabelas. Apenas um navegador de Mestre responde. Cada sorteio deixa um registro permanente no log de chat do seu mundo.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHeading": "Comandos de tabela do Twitch",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsIntro": "Quais palavras seus espectadores podem digitar, e em qual tabela cada uma sorteia, se configura no JDR Ninja. Este interruptor decide apenas se é este navegador que responde.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsToggle": "Responder a comandos de tabela deste navegador",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOn": "Ligado",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOff": "Desligado",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHint": "As tabelas são identificadas pelo UUID do Foundry, então tabelas de compêndios também funcionam. Clique direito em uma tabela, depois Copiar UUID, e cole no site.",
+  "JDRNINJA_VTT_OVERLAY.panel.button.openCommands": "Gerenciar os comandos no JDR Ninja",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOn": "Os comandos de tabela do Twitch estão ativos neste navegador.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOff": "Os comandos de tabela do Twitch estão inativos neste navegador.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsInactive": "Nada será processado ainda: comandos de tabela também exigem o repasse de rolagens ativo e um navegador de Mestre."
 }

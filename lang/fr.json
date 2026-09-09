@@ -103,5 +103,18 @@
   "JDRNINJA_VTT_OVERLAY.toast.saved": "Paramètres enregistrés.",
 
   "JDRNINJA_VTT_OVERLAY.misc.unknownRoller": "Inconnu",
-  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Navigateur"
+  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Navigateur",
+
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.name": "Autoriser les commandes de table Twitch",
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.hint": "Lorsque c'est activé, ce navigateur répond aux commandes de chat que tu as configurées sur JDR Ninja : un spectateur qui tape un de tes mots tire dans la table que tu lui as associée. Désactivé par défaut, et distinct du relais de jets, donc autoriser les spectateurs à lancer des dés ne les autorise jamais à tirer dans tes tables. Seul un navigateur de MJ répond. Chaque tirage laisse une entrée permanente dans le journal de ton monde.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHeading": "Commandes de table Twitch",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsIntro": "Les mots que tes spectateurs peuvent taper, et la table dans laquelle chacun tire, se configurent sur JDR Ninja. Cet interrupteur décide seulement si c'est ce navigateur qui y répond.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsToggle": "Répondre aux commandes de table depuis ce navigateur",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOn": "Actif",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOff": "Inactif",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHint": "Les tables sont désignées par leur UUID Foundry, donc les tables de compendium fonctionnent aussi. Clic droit sur une table, puis Copier l'UUID, et colle-le sur le site.",
+  "JDRNINJA_VTT_OVERLAY.panel.button.openCommands": "Gérer les commandes sur JDR Ninja",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOn": "Les commandes de table Twitch sont actives pour ce navigateur.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOff": "Les commandes de table Twitch sont inactives pour ce navigateur.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsInactive": "Rien ne sera traité pour l'instant : les commandes de table exigent aussi le relais de jets actif et un navigateur de MJ."
 }

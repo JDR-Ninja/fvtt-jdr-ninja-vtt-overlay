@@ -103,5 +103,18 @@
   "JDRNINJA_VTT_OVERLAY.toast.saved": "Ajustes guardados.",
 
   "JDRNINJA_VTT_OVERLAY.misc.unknownRoller": "Desconocido",
-  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Navegador"
+  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Navegador",
+
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.name": "Permitir comandos de tabla desde Twitch",
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.hint": "Cuando está activo, este navegador responde a los comandos de chat que has configurado en JDR Ninja: un espectador que escribe una de tus palabras sortea en la tabla que le hayas asociado. Desactivado por defecto, e independiente del reenvío de tiradas, así que permitir que los espectadores tiren dados nunca les permite sortear en tus tablas. Solo responde un navegador de Director. Cada sorteo deja una entrada permanente en el registro de chat de tu mundo.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHeading": "Comandos de tabla de Twitch",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsIntro": "Qué palabras pueden escribir tus espectadores, y en qué tabla sortea cada una, se configura en JDR Ninja. Este interruptor solo decide si es este navegador el que responde.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsToggle": "Responder a los comandos de tabla desde este navegador",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOn": "Activo",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOff": "Inactivo",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHint": "Las tablas se identifican por su UUID de Foundry, así que las tablas de compendio también funcionan. Clic derecho en una tabla, luego Copiar UUID, y pégalo en el sitio.",
+  "JDRNINJA_VTT_OVERLAY.panel.button.openCommands": "Gestionar los comandos en JDR Ninja",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOn": "Los comandos de tabla de Twitch están activos en este navegador.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOff": "Los comandos de tabla de Twitch están inactivos en este navegador.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsInactive": "Todavía no se procesará nada: los comandos de tabla también necesitan el reenvío de tiradas activo y un navegador de Director."
 }

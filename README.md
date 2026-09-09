@@ -101,6 +101,30 @@ What a hold does **not** delay: combat tracker initiative values (DSN masks thos
 without DSN they still appear immediately), Foundry's own dice sound, and inline rolls inside
 non-roll messages.
 
+## Twitch table commands (optional)
+
+A viewer types a word in your Twitch chat and this module draws from one of your roll tables.
+The draw is real: it lands in your world's chat log, and the roll it produces reaches the
+overlay through the ordinary relay, so viewers see the number the table actually gave.
+
+Which words exist, and which table each one draws from, is configured on
+[JDR Ninja](https://www.jdr.ninja/vtt-overlay/commandes), not here. **Allow Twitch table
+commands** (in the module's Foundry settings) decides only whether *this* browser is the one
+that answers them. It is **off by default**, client scope, and needs two more things:
+
+- **A Game Master browser.** A draw writes into the world, so a player client cannot do it.
+- **The roll relay on as well.** The two switches are separate, so letting viewers roll dice
+  never lets them draw from your tables by accident.
+
+Name a table by its Foundry **UUID**: right-click it, pick *Copy UUID*, paste it on the site.
+Tables inside compendiums work too.
+
+One restriction is easy to trip over: every die in the table's formula must be one the overlay
+can animate (`d4` `d6` `d8` `d10` `d12` `d20`). That rules out `1d100`, and also Foundry's
+**default** table formula `1d{results.length}`, which gives shapes like d7 or d13. A table that
+fails this is refused, and the refusal is logged to the browser console and nowhere else:
+viewers never receive a reply of any kind.
+
 ## Diagnostics and test
 
 The settings panel exposes:

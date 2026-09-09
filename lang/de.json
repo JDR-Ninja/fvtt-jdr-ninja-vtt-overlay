@@ -103,5 +103,18 @@
   "JDRNINJA_VTT_OVERLAY.toast.saved": "Einstellungen gespeichert.",
 
   "JDRNINJA_VTT_OVERLAY.misc.unknownRoller": "Unbekannt",
-  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Browser"
+  "JDRNINJA_VTT_OVERLAY.misc.browserFallback": "Browser",
+
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.name": "Tabellenbefehle aus Twitch erlauben",
+  "JDRNINJA_VTT_OVERLAY.settings.tableCommands.hint": "Wenn aktiv, beantwortet dieser Browser die Chat-Befehle, die du auf JDR Ninja eingerichtet hast: ein Zuschauer, der eines deiner Wörter tippt, zieht aus der Tabelle, die du ihm zugeordnet hast. Standardmäßig aus und getrennt von der Wurfweiterleitung, sodass Zuschauern das Würfeln zu erlauben ihnen nie erlaubt, aus deinen Tabellen zu ziehen. Nur ein Spielleiter-Browser antwortet. Jeder Zug hinterlässt einen dauerhaften Eintrag im Chat-Protokoll deiner Welt.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHeading": "Twitch-Tabellenbefehle",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsIntro": "Welche Wörter deine Zuschauer tippen können und aus welcher Tabelle jedes zieht, wird auf JDR Ninja eingerichtet. Dieser Schalter entscheidet nur, ob dieser Browser derjenige ist, der antwortet.",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsToggle": "Tabellenbefehle aus diesem Browser beantworten",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOn": "An",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsOff": "Aus",
+  "JDRNINJA_VTT_OVERLAY.panel.tableCommandsHint": "Tabellen werden über ihre Foundry-UUID benannt, daher funktionieren auch Tabellen aus Kompendien. Rechtsklick auf eine Tabelle, dann UUID kopieren, und auf der Website einfügen.",
+  "JDRNINJA_VTT_OVERLAY.panel.button.openCommands": "Befehle auf JDR Ninja verwalten",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOn": "Twitch-Tabellenbefehle sind für diesen Browser aktiv.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsOff": "Twitch-Tabellenbefehle sind für diesen Browser inaktiv.",
+  "JDRNINJA_VTT_OVERLAY.toast.tableCommandsInactive": "Es wird noch nichts beantwortet: Tabellenbefehle brauchen zusätzlich die aktive Wurfweiterleitung und einen Spielleiter-Browser."
 }
