@@ -6,6 +6,20 @@ All notable changes to this module are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-11
+
+### Fixed
+
+- With Dice So Nice active, every relayed roll reached the overlay about two seconds after the
+  3D dice started at the table. Dice So Nice loads before this module and announces the start
+  of a roll from inside its own chat hook, so the announcement had always gone by before the
+  module looked for it and each roll waited out the safety fallback instead. The module now
+  recognises a roll Dice So Nice has already started and sends it at once; the fallback only
+  covers a start that never comes.
+- Two Foundry v14 deprecation warnings raised by a Twitch table draw (`RollTable#draw` option
+  `rollMode`, and reading `CONST.DICE_ROLL_MODES`). The draw uses v14's `messageMode` when the
+  client has it and keeps the v13 option otherwise.
+
 ## [1.3.0] - 2026-09-09
 
 ### Added

@@ -12,7 +12,8 @@
  *  - Hidden rolls (gmroll / blindroll / selfroll) are filtered by `whisper`/`blind`,
  *    NEVER by `isContentVisible` (which is true for a GM even on secret rolls).
  *  - Works with or without Dice So Nice. When DSN is present we dispatch on its animation
- *    start (id-matched, persistent hook + ~2s safety fallback); otherwise we POST immediately.
+ *    start (id-matched in either hook order, persistent hook + ~2s safety fallback); otherwise
+ *    we POST immediately.
  *  - Dice So Nice appearance pass-through is a copyright-safe SUBSET (colors + material/font
  *    NAMES only) read from the ROLLER's flags. Never DSN textures/meshes/colorset tables.
  *  - Free to install and pair; relaying real rolls requires a paid JDR Ninja plan (server-enforced).
@@ -483,20 +484,44 @@ async function runDeviceFlow(onStatus) {
 /** messageId -> { payload, timer } while awaiting diceSoNiceRollStart. */
 const pendingDsn = new Map();
 
+/**
+ * messageId -> expiry timer for rolls DSN had ALREADY started when dispatch() ran.
+ *
+ * That is the usual order, not a corner case: Foundry registers hooks in module load order,
+ * `dice-so-nice` sorts before this module, and DSN fires `diceSoNiceRollStart` synchronously from
+ * inside its own `createChatMessage` handler. So by the time our handler reaches dispatch() the
+ * start signal has already gone by, and matching on it alone left every DSN roll waiting out the
+ * fallback timer, two seconds behind the table. Measured, not guessed (2026-09-11, DSN 6.2.9).
+ *
+ * A start we never match (hidden roll, filtered author, no dice) expires on its own after the
+ * same window the fallback uses; nothing here needs a cleanup pass.
+ */
+const startedDsn = new Map();
+
 function dispatch(messageId, payload) {
-  if (game.dice3d) {
-    // DSN present: POST when DSN starts animating THIS roll, with a safety fallback.
-    const timer = setTimeout(() => {
-      if (pendingDsn.has(messageId)) {
-        pendingDsn.delete(messageId);
-        void postRoll(payload);
-      }
-    }, DSN_FALLBACK_MS);
-    pendingDsn.set(messageId, { payload, timer });
-  } else {
+  if (!game.dice3d) {
     // No DSN: post immediately.
     void postRoll(payload);
+    return;
   }
+
+  const started = startedDsn.get(messageId);
+  if (started !== undefined) {
+    // DSN is already animating THIS roll: post now, in step with it.
+    clearTimeout(started);
+    startedDsn.delete(messageId);
+    void postRoll(payload);
+    return;
+  }
+
+  // DSN present but not started yet: POST when it starts THIS roll, with a safety fallback.
+  const timer = setTimeout(() => {
+    if (pendingDsn.has(messageId)) {
+      pendingDsn.delete(messageId);
+      void postRoll(payload);
+    }
+  }, DSN_FALLBACK_MS);
+  pendingDsn.set(messageId, { payload, timer });
 }
 
 /* ------------------------------------------------------------------ */
@@ -603,11 +628,18 @@ async function handleDrawCommand(uuid) {
 
   // Public on purpose, twice over: the module drops hidden rolls before they ever leave this client,
   // and the GM has to see the result to read it out loud.
-  const publicRoll = CONST?.DICE_ROLL_MODES?.PUBLIC ?? "publicroll";
+  //
+  // v14 renamed the option: `messageMode`, a key of CONFIG.ChatMessage.modes, replaces `rollMode`
+  // and its `publicroll` value, and v14 logs a deprecation for both the old option and for merely
+  // reading CONST.DICE_ROLL_MODES (removal in v16). v13 has neither the option nor the config, so
+  // the config's presence is the version test; the v13 literal stays a literal for the same reason.
+  const drawOptions = CONFIG.ChatMessage?.modes?.public
+    ? { messageMode: "public" }
+    : { rollMode: "publicroll" };
   try {
     // Nothing is posted to the overlay from here. The draw lands in chat, `createChatMessage` picks
     // it up, and it relays through the ordinary path. One relay path, and the return trip is free.
-    await table.draw({ rollMode: publicRoll });
+    await table.draw(drawOptions);
   } catch (err) {
     console.error(`${MODULE_ID} | table draw failed`, err);
   }
@@ -1150,14 +1182,21 @@ Hooks.once("ready", () => {
   syncCommandPolling();
 });
 
-// Persistent DSN start hook (id-matched). Registering it unconditionally is harmless
-// when DSN is absent; it only ever fires when DSN animates a roll we stashed.
+// Persistent DSN start hook (id-matched, either order). Registering it unconditionally is
+// harmless when DSN is absent; it only ever fires when DSN animates a roll.
 Hooks.on("diceSoNiceRollStart", (messageId) => {
   const entry = pendingDsn.get(messageId);
-  if (!entry) return;
-  clearTimeout(entry.timer);
-  pendingDsn.delete(messageId);
-  void postRoll(entry.payload);
+  if (entry) {
+    // dispatch() got there first (DSN loaded after us, or started this roll asynchronously).
+    clearTimeout(entry.timer);
+    pendingDsn.delete(messageId);
+    void postRoll(entry.payload);
+    return;
+  }
+  // DSN got there first, the common order (see startedDsn): remember the id so that dispatch()
+  // posts on arrival instead of waiting for a start signal that has already passed.
+  if (startedDsn.has(messageId)) return;
+  startedDsn.set(messageId, setTimeout(() => startedDsn.delete(messageId), DSN_FALLBACK_MS));
 });
 
 Hooks.on("createChatMessage", (message) => {
