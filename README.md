@@ -10,8 +10,9 @@ Foundry is the dice authority: the module sends the exact result your players sa
   so any roll that reaches chat is captured regardless of game system.
 - **Works with or without [Dice So Nice](https://gitlab.com/riccisi/foundryvtt-dice-so-nice).**
   When DSN is present, the overlay dispatch is synchronized with DSN's animation and can
-  approximate the roller's dice colors, material and font (cosmetic only). When DSN is
-  absent, the roll is sent immediately.
+  approximate the roller's dice colors, material and font (cosmetic only). A roll DSN chooses
+  not to animate (a table draw with its *Animate roll tables* setting off, for instance) is
+  sent right away, and so is every roll when DSN is absent.
 - **Hidden rolls stay hidden.** GM (`gmroll`), blind (`blindroll`) and self/whispered
   (`selfroll`) rolls are never sent to the public overlay.
 
@@ -155,37 +156,6 @@ English, which is Foundry's canonical manifest language.
   colorset tables.
 - The device token grants only the ability to animate **your own** overlay. Revoke it on the
   JDR Ninja VTT Overlay page if a machine is lost.
-
-## Development
-
-```bash
-npm install
-npm run build     # bundles scripts/, stages dist/, produces module.zip
-npm run watch     # rebuild the bundle on change, no zip
-```
-
-### Cutting a release
-
-A `v*` tag is the whole release. Create it on GitHub (**Releases**, *Draft a new release*,
-*Create new tag on publish*, e.g. `v1.0.1`) and `.github/workflows/release.yml` takes over:
-it stamps the tag's version into `module.json`, re-points `download` at that tag, runs the
-consistency check, builds, and attaches `module.json` and `module.zip` to the release. The
-assets land a minute or so after the release appears.
-
-The tag is the source of truth for the version, so no commit is needed beforehand. Tag names
-must be `v<major>.<minor>.<patch>`; anything else either fails loudly or, without the leading
-`v`, never starts the workflow at all. To rebuild a tag that already exists, run the workflow
-manually from the **Actions** tab and give it the tag name, rather than deleting and
-recreating the tag.
-
-Optionally, to record the shipped version in the repo and build the exact zip locally first:
-
-```bash
-npm run release -- patch
-```
-
-That bumps `module.json`, re-points `manifest`/`download` and rebuilds. Committing, tagging
-and pushing stay in your hands; pushing a `v*` tag runs the same workflow.
 
 ## License
 

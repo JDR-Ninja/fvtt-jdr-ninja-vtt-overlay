@@ -6,6 +6,17 @@ All notable changes to this module are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-09-11
+
+### Fixed
+
+- A roll Dice So Nice declines to animate no longer waits out the safety fallback before it
+  reaches the overlay. The usual case is a Twitch table draw: Dice So Nice leaves roll table
+  draws alone unless its *Animate roll tables* setting is on, so every draw reached the overlay
+  about two seconds after the chat card. The module now reads Dice So Nice's decision for each
+  message and sends such a roll at once. Systems that drive Dice So Nice themselves are left on
+  the start signal, as before.
+
 ## [1.3.1] - 2026-09-11
 
 ### Fixed

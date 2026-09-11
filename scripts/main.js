@@ -12,8 +12,8 @@
  *  - Hidden rolls (gmroll / blindroll / selfroll) are filtered by `whisper`/`blind`,
  *    NEVER by `isContentVisible` (which is true for a GM even on secret rolls).
  *  - Works with or without Dice So Nice. When DSN is present we dispatch on its animation
- *    start (id-matched in either hook order, persistent hook + ~2s safety fallback); otherwise
- *    we POST immediately.
+ *    start, or at once when it declines to animate the roll (both id-matched in either hook
+ *    order, persistent hooks + ~2s safety fallback); otherwise we POST immediately.
  *  - Dice So Nice appearance pass-through is a copyright-safe SUBSET (colors + material/font
  *    NAMES only) read from the ROLLER's flags. Never DSN textures/meshes/colorset tables.
  *  - Free to install and pair; relaying real rolls requires a paid JDR Ninja plan (server-enforced).
@@ -481,22 +481,42 @@ async function runDeviceFlow(onStatus) {
 /* Dispatch timing (DSN-aware)                                         */
 /* ------------------------------------------------------------------ */
 
-/** messageId -> { payload, timer } while awaiting diceSoNiceRollStart. */
+/** messageId -> { payload, timer } while awaiting DSN's word on the roll (see settleDsn). */
 const pendingDsn = new Map();
 
 /**
- * messageId -> expiry timer for rolls DSN had ALREADY started when dispatch() ran.
+ * messageId -> expiry timer for rolls whose DSN timing was ALREADY known when dispatch() ran:
+ * DSN had started animating the roll, or had declined to animate it at all.
  *
  * That is the usual order, not a corner case: Foundry registers hooks in module load order,
- * `dice-so-nice` sorts before this module, and DSN fires `diceSoNiceRollStart` synchronously from
- * inside its own `createChatMessage` handler. So by the time our handler reaches dispatch() the
- * start signal has already gone by, and matching on it alone left every DSN roll waiting out the
- * fallback timer, two seconds behind the table. Measured, not guessed (2026-09-11, DSN 6.2.9).
+ * `dice-so-nice` sorts before this module, and DSN fires both `diceSoNiceMessageProcessed` and
+ * `diceSoNiceRollStart` synchronously from inside its own `createChatMessage` handler. So by the
+ * time our handler reaches dispatch() the signal has already gone by, and matching on it alone
+ * left every DSN roll waiting out the fallback timer, two seconds behind the table. Measured, not
+ * guessed (2026-09-11, DSN 6.2.9).
  *
- * A start we never match (hidden roll, filtered author, no dice) expires on its own after the
+ * An entry we never match (hidden roll, filtered author, no dice) expires on its own after the
  * same window the fallback uses; nothing here needs a cleanup pass.
  */
-const startedDsn = new Map();
+const settledDsn = new Map();
+
+/**
+ * DSN has just told us all there is to know about this message's timing: it started animating
+ * the roll, or it will not animate it. Either way there is nothing left to wait for. If dispatch()
+ * already stashed the roll, send it now; otherwise remember the id so dispatch() sends on arrival.
+ */
+function settleDsn(messageId) {
+  const entry = pendingDsn.get(messageId);
+  if (entry) {
+    // dispatch() got there first (DSN loaded after us, or reached its decision asynchronously).
+    clearTimeout(entry.timer);
+    pendingDsn.delete(messageId);
+    void postRoll(entry.payload);
+    return;
+  }
+  if (settledDsn.has(messageId)) return;
+  settledDsn.set(messageId, setTimeout(() => settledDsn.delete(messageId), DSN_FALLBACK_MS));
+}
 
 function dispatch(messageId, payload) {
   if (!game.dice3d) {
@@ -505,16 +525,17 @@ function dispatch(messageId, payload) {
     return;
   }
 
-  const started = startedDsn.get(messageId);
-  if (started !== undefined) {
-    // DSN is already animating THIS roll: post now, in step with it.
-    clearTimeout(started);
-    startedDsn.delete(messageId);
+  const settled = settledDsn.get(messageId);
+  if (settled !== undefined) {
+    // DSN is already animating THIS roll, or will not animate it: post now.
+    clearTimeout(settled);
+    settledDsn.delete(messageId);
     void postRoll(payload);
     return;
   }
 
-  // DSN present but not started yet: POST when it starts THIS roll, with a safety fallback.
+  // DSN present but silent so far: POST when it starts or declines THIS roll, with a safety
+  // fallback for the cases where it never says either (see the DSN hooks below).
   const timer = setTimeout(() => {
     if (pendingDsn.has(messageId)) {
       pendingDsn.delete(messageId);
@@ -1182,21 +1203,25 @@ Hooks.once("ready", () => {
   syncCommandPolling();
 });
 
-// Persistent DSN start hook (id-matched, either order). Registering it unconditionally is
-// harmless when DSN is absent; it only ever fires when DSN animates a roll.
-Hooks.on("diceSoNiceRollStart", (messageId) => {
-  const entry = pendingDsn.get(messageId);
-  if (entry) {
-    // dispatch() got there first (DSN loaded after us, or started this roll asynchronously).
-    clearTimeout(entry.timer);
-    pendingDsn.delete(messageId);
-    void postRoll(entry.payload);
-    return;
-  }
-  // DSN got there first, the common order (see startedDsn): remember the id so that dispatch()
-  // posts on arrival instead of waiting for a start signal that has already passed.
-  if (startedDsn.has(messageId)) return;
-  startedDsn.set(messageId, setTimeout(() => startedDsn.delete(messageId), DSN_FALLBACK_MS));
+// Persistent DSN hooks (id-matched, either order). Registering them unconditionally is harmless
+// when DSN is absent; they only ever fire when DSN looks at a roll.
+
+// DSN starts animating a roll: the overlay dice should leave now, in step with the table's.
+Hooks.on("diceSoNiceRollStart", (messageId) => settleDsn(messageId));
+
+// DSN's animation decision, taken once per message before it animates anything. A `false` is a
+// roll no start signal will ever follow, and the common one is a RollTable draw: DSN leaves those
+// alone unless its "Animate roll tables" world setting is on, which is off by default. Waiting
+// for the start signal there put every Twitch table draw a full fallback window behind the chat
+// card. Observation only: since DSN 6 the hook for CHANGING the decision is
+// `diceSoNiceMessagePreProcess`, and this one fires after that, so it reports what will happen.
+Hooks.on("diceSoNiceMessageProcessed", (messageId, interception) => {
+  if (interception?.willTrigger3DRoll !== false) return;
+  // A system that drives DSN by hand switches DSN's own chat hook off and calls showForRoll
+  // itself. DSN then answers `false` for every message although a start signal is still coming,
+  // so keep waiting for it (the fallback still covers a system that never sends one).
+  if (game.dice3d?.messageHookDisabled) return;
+  settleDsn(messageId);
 });
 
 Hooks.on("createChatMessage", (message) => {
